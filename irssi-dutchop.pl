@@ -4,7 +4,6 @@
 
 use strict;
 use warnings;
-use 5.018;
 use vars qw($VERSION %IRSSI);
 use Irssi;
 
@@ -17,16 +16,53 @@ $VERSION = '0.1.0';
     license     => 'GPLv3',
 );
 
-# Channel warnings
-my $cflood = 'Wil je niet teveel (onzin) achter elkaar typen? Als je de aandacht wil, zorg dan dat je origineel bent en praat lekker mee of spreek iemand aan.';
-my $ctaal = 'Zou je alsjeblieft op je taalgebruik willen letten. Ik zou het jammer vinden als ik iemand uit dit chatkanaal zou moeten verwijderen om zoiets kinderachtigs.';
-my $cprive = 'Je kan beter geen privégegevens doorgeven. Dit kan later vervelende gevolgen hebben zoals bijvoorbeeld stalkers. Besluit je toch om gegevens door te geven, doe dat dan in een privebericht.';
-my $ccaps = 'Alleen maar hoofdletters gebruiken wordt gezien als schreeuwen en is erg onvriendelijk. Hiervoor mag ik je verwijderen uit dit chatkanaal. Dit wil ik graag voorkomen met deze waarschuwing.';
+my %flood_msg = (
+	'warn' => 'Wil je niet teveel (onzin) achter elkaar typen? Als je de ' .
+		  'aandacht wil, zorg dan dat je origineel bent en praat '.
+		  'lekker mee of spreek iemand aan.',
+	'kick' => 'Teveel (onzin) typen is storend. Helaas is je enthousiasme ' .
+		  'niet te temmen.',
+	'ban'  => 'Teveel (onzin) typen is storend. Helaas is je enthousiasme ' .
+		  'niet te temmen.',
+);
 
-# kick messages
-my $kick_taal = 'Jouw taalgebruik is niet wenselijk';
-my $kick_flood = 'Onzin typen is storend. Helaas is je enthousiasme niet te temmen.';
-my $kick_nick = 'Jouw nickname is niet wenselijk, verander hem met /nick';
+my %lang_msg = (
+	'warn' => 'Zou je alsjeblieft op je taalgebruik willen letten? Ik zou ' .
+		  'het jammer vinden als ik iemand uit dit chatkanaal zou moeten verwijderen.',
+	'kick' => 'Je taalgebruik is niet wenselijk.',
+	'ban'  => 'Je taalgebruik is niet wenselijk.',
+);
+
+my %nick_msg = (
+	'warn' => 'Je schuilnaam is niet gepast en ik wil graag dat je deze ' .
+		  'veranderd. Je kan je schuilnaam veranderen met het ' .
+		  'commando /nick NieuweNaam.',
+	'kick' => 'Je schuilnaam is niet toegestaan. Je kan je naam veranderen met /nick nieuwenaam.',
+	'ban'  => 'Je schuilnaam is niet toegestaan. Je kan je naam veranderen met /nick nieuwenaam.',
+);
+
+my %caps_msg = (
+	'warn' => 'Alleen maar hoofdletters gebruiken wordt gezien als ' .
+		  'schreeuwen en is erg onvriendelijk. Ik wil graag dat je daar mee stopt!',
+	'kick' => 'Helaas schrijf je alles in hoofdletters. Dat is niet wenselijk.',
+	'ban'  => 'Helaas schrijf je alles in hoofdletters. Dat is niet wenselijk.',
+);
+
+my %prive_msg = (
+	'warn' => 'Je kan beter geen privégegevens doorgeven. Dit kan later ' .
+		  'vervelende gevolgen hebben. Besluit je toch om gegevens door ' .
+		  'te geven, doe dat dan in een privébericht.',
+	'kick' => 'Geef prive gegevens door in privé, niet in het kanaal!',
+	'ban'  => 'Geef prive gegevens door in privé, niet in het kanaal!',
+);
+
+my %warning_msgs = (
+	'flood' => \%flood_msg,
+	'lang' => \%lang_msg,
+	'nick' => \%nick_msg,
+	'caps' => \%caps_msg,
+	'prive' => \%prive_msg,
+);
 
 sub warn_msg
 {
@@ -75,89 +111,68 @@ sub timeout_msg
 
 sub do_action
 {
-	my ($msg, $data, $server, $witem) = @_;
+	my ($type, $data, $server, $witem) = @_;
 
 	if($data) {
-		my ($action, $target) = split /\s*:\s*/, $data, 2;
+		my ($action, $target) = split / /, $data, 2;
 
-		Irsii::print("action: $action - target: $target");
-		$target = $action unless $target;
+		if($action eq 'k' or $action eq 'kick') {
+			kick_msg($warning_msgs{$type}->{kick}, $target,
+				$server, $witem);
+		} elsif($action eq 'kb' or $action eq 'tb') {
+			timeout_msg($warning_msgs{$type}->{ban}, $target,
+				$server, $witem);
+		} else {
+			$target = $action unless $target;
+			warn_msg($warning_msgs{$type}->{warn}, $target,
+				$server, $witem);
 
-		given ($action) {
-			kick_msg($msg, $target, $server, $witem) when ['k', 'kick'];
-			default { warn_msg($msg, $target, $server, $witem) }
 		}
 	} else {
-		# Nothing is up, just a playing channel warning.
-		warn_msg($msg, $data, $server, $witem);
+		# Channel warning
+		warn_msg($warning_msgs{$type}->{warn}, $data, $server, $witem);
 	}
 }
 
 # Channel/nick warnings
-sub cmd_cflood
+sub cmd_flood
 {
 	my ($data, $server, $witem) = @_;
 
-	Irsii::print("Hello");
-	#do_action($cflood, $data, $server, $witem);
+	do_action('flood', $data, $server, $witem);
 }
 
-sub cmd_ccaps
-{
-	my ($data, $server, $witem) = @_;
-	
-	warn_msg($ccaps, $data, $server, $witem);
-}
-
-sub cmd_cprive
-{
-	my ($data, $server, $witem) = @_;
-
-	warn_msg($cprive, $data, $server, $witem);
-}
-
-sub cmd_ctaal
-{
-	my ($data, $server, $witem) = @_;
-
-	warn_msg($ctaal, $data, $server, $witem);
-}
-
-# Kicks
-sub cmd_kflood
+sub cmd_caps
 {
 	my ($data, $server, $witem) = @_;
 	
-	kick_msg($cflood, $data, $server, $witem);
+	do_action('caps', $data, $server, $witem);
 }
 
-sub cmd_kcaps
-{
-	my ($data, $server, $witem) = @_;
-	
-	kick_msg($ccaps, $data, $server, $witem);
-}
-
-sub cmd_kprive
+sub cmd_prive
 {
 	my ($data, $server, $witem) = @_;
 
-	kick_msg($cprive, $data, $server, $witem);
+	do_action('prive', $data, $server, $witem);
 }
 
-sub cmd_ktaal
+sub cmd_taal
 {
 	my ($data, $server, $witem) = @_;
 
-	kick_msg($ctaal, $data, $server, $witem);
+	do_action('lang', $data, $server, $witem);
 }
 
-Irssi::command_bind('flood', 'cmd_cflood');
-Irssi::command_bind('taal', 'cmd_ctaal');
-Irssi::command_bind('prive', 'cmd_cprive');
-Irssi::command_bind('caps', 'cmd_ccaps');
+sub cmd_nick
+{
+	my ($data, $server, $witem) = @_;
 
-Irssi::command_bind('kflood', 'cmd_kflood');
-Irssi::command_bind('ktaal', 'cmd_ktaal');
-Irssi::command_bind('kprive', 'cmd_kprive');
-Irssi::command_bind('kcaps', 'cmd_kcaps');
+	do_action('nick', $data, $server, $witem);
+}
+
+Irssi::command_bind('flood', 'cmd_flood');
+Irssi::command_bind('taal', 'cmd_taal');
+Irssi::command_bind('prive', 'cmd_prive');
+Irssi::command_bind('caps', 'cmd_caps');
+Irssi::command_bind('nk', 'cmd_nick');
+
