@@ -134,6 +134,36 @@ sub do_action
 	}
 }
 
+sub do_request
+{
+	my ($data, $server, $witem) = @_;
+
+	Irssi::print("Not enough parameters given") unless $data;
+	return unless $data;
+
+	my ($action, $args) = split / /, $data, 2;
+
+	Irssi::print("Not enough parameters given") unless $args;
+	return unless $args;
+
+	my ($user, $reason) = split / /, $args, 2;
+
+	unless($user and $reason) {
+		Irssi::print("Not enough parameters given");
+		return;
+	}
+
+
+	if($action eq 'gline') {
+		$witem->command("MSG #dutchops /gline $user 2m :$reason " .
+			"Korte ban, mail voor meer info naar jcc\@jota-joti.nl");
+	} elsif($action eq 'kill') {
+		$witem->command("MSG #dutchops /kill $user $reason");
+	} elsif($action eq 'nick') {
+		$witem->command("MSG #dutchops Nickchange: /sanick $user $reason");
+	}
+}
+
 # Channel/nick warnings
 sub cmd_flood
 {
@@ -170,9 +200,19 @@ sub cmd_nick
 	do_action('nick', $data, $server, $witem);
 }
 
+sub cmd_request
+{
+	my ($data, $server, $witem) = @_;
+
+	do_request($data, $server, $witem);
+}
+
 Irssi::command_bind('flood', 'cmd_flood');
 Irssi::command_bind('taal', 'cmd_taal');
 Irssi::command_bind('prive', 'cmd_prive');
 Irssi::command_bind('caps', 'cmd_caps');
 Irssi::command_bind('nk', 'cmd_nick');
+
+Irssi::command_bind('rq', 'cmd_request');
+Irssi::command_bind('request', 'cmd_request');
 
