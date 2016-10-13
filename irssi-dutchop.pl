@@ -186,7 +186,7 @@ sub cmd_prive
 	do_action('prive', $data, $server, $witem);
 }
 
-sub cmd_taal
+sub cmd_lang
 {
 	my ($data, $server, $witem) = @_;
 
@@ -208,7 +208,7 @@ sub cmd_request
 }
 
 Irssi::command_bind('flood', 'cmd_flood');
-Irssi::command_bind('taal', 'cmd_taal');
+Irssi::command_bind('lang', 'cmd_lang');
 Irssi::command_bind('prive', 'cmd_prive');
 Irssi::command_bind('caps', 'cmd_caps');
 Irssi::command_bind('nk', 'cmd_nick');
