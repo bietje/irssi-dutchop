@@ -164,6 +164,28 @@ sub do_request
 	}
 }
 
+sub do_ppp
+{
+	my ($data, $server, $witem) = @_;
+
+	Irssi::print("Not enough parameters given") unless $data;
+	return unless $data;
+
+	my ($action, $args) = split / /, $data, 2;
+
+	if($action eq "start") {
+		$witem->command("MSG Pimmetje !startppp");
+	} elsif($action eq "stop") {
+		$witem->command("MSG Pimmetje !stopppp");
+	} elsif($action eq "punt") {
+		$witem->command("MSG Pimmetje !punterbij $args");
+	} elsif($action eq "strafpunt") {
+		$witem->command("MSG Pimmetje !strafpunt $args");
+	} elsif($action eq "hiscore") {
+		$witem->command("MSG Pimmetje !hiscore");
+	}
+}
+
 # Channel/nick warnings
 sub cmd_flood
 {
@@ -207,6 +229,13 @@ sub cmd_request
 	do_request($data, $server, $witem);
 }
 
+sub cmd_pimmetje
+{
+	my ($data, $server, $witem) = @_;
+
+	do_ppp($data, $server, $witem);
+}
+
 Irssi::command_bind('flood', 'cmd_flood');
 Irssi::command_bind('lang', 'cmd_lang');
 Irssi::command_bind('prive', 'cmd_prive');
@@ -216,3 +245,4 @@ Irssi::command_bind('nk', 'cmd_nick');
 Irssi::command_bind('rq', 'cmd_request');
 Irssi::command_bind('request', 'cmd_request');
 
+Irssi::command_bind('pimmetje', 'cmd_request');
