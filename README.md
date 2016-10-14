@@ -9,7 +9,7 @@ script (e.g. the control of Pimpampet).
 The script can be installed by running the following command:
 
 ```bash
-wget -nv -O https://git.bietje.net/bietje/irssi-dutchop/raw/master/irssi-dutchop.pl > ~/.irssi/scripts/irssi-dutchop.pl
+wget -nv -O- https://git.bietje.net/bietje/irssi-dutchop/raw/master/irssi-dutchop.pl > ~/.irssi/scripts/irssi-dutchop.pl
 ```
 This will download the script to irssi's default script location. Once
 installed, the script can be loaded by running the 'script load' command
