@@ -155,12 +155,12 @@ sub do_request
 
 
 	if($action eq 'gline') {
-		$witem->command("MSG #dutchops /gline $user 2m :$reason " .
+		$witem->command("MSG #beneluxops /gline $user 2m :$reason " .
 			"Korte ban, mail voor meer info naar jcc\@jota-joti.nl");
 	} elsif($action eq 'kill') {
-		$witem->command("MSG #dutchops /kill $user $reason");
+		$witem->command("MSG #beneluxops /kill $user $reason");
 	} elsif($action eq 'nick') {
-		$witem->command("MSG #dutchops Nickchange: /sanick $user $reason");
+		$witem->command("MSG #beneluxops Nickchange: /sanick $user $reason");
 	}
 }
 
@@ -243,6 +243,6 @@ Irssi::command_bind('caps', 'cmd_caps');
 Irssi::command_bind('nk', 'cmd_nick');
 
 Irssi::command_bind('rq', 'cmd_request');
-Irssi::command_bind('request', 'cmd_request');
+Irssi::command_bind('request', 'do_request');
 
 Irssi::command_bind('pimmetje', 'cmd_request');
